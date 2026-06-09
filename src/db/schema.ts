@@ -35,7 +35,7 @@ export const assignments = pgTable("assignments", {
   memberId: integer("member_id").references(() => members.id),
   eventId: integer("event_id").references(() => events.id),
   pointsAwarded: integer("points_awarded").default(0),
-  //status: text("status").default("Assigned").notNull(),
+  status: text("status").default("Assigned").notNull(),
 });
 
 export const formComponents = pgTable("form_components", {
