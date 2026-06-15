@@ -1,4 +1,4 @@
-import { registerMember, loginUser } from "./src/auth";
+import { registerMember, loginUser } from "./auth";
 
 async function runTests() {
   console.log("--- Starting Backend Tests ---");
