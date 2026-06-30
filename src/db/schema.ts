@@ -17,6 +17,7 @@ export const profiles = pgTable("profiles", {
   expertiseLevel: text("expertise_level").notNull(), 
   totalPoints: integer("total_points").default(0),
   collegeDept: text("college_dept").notNull(),
+  badges: jsonb("badges").default([]),
 });
 
 export const leads = pgTable("leads", {
@@ -45,6 +46,7 @@ export const formComponents = pgTable("form_components", {
   domainDist: jsonb("domain_dist").notNull(),
   venueName: text("venue_name").notNull(),
   venueCapacity: integer("venue_capacity").notNull(),
+  isCompleted: text("is_completed").default("false").notNull(),
 });
 
 export const freeHours = pgTable("free_hours", {
@@ -53,4 +55,14 @@ export const freeHours = pgTable("free_hours", {
   dayOrder: integer("day_order"),
   startTime: time("start_time"),
   endTime: time("end_time"),
+});
+
+export const requests = pgTable("requests", {
+  id: serial("id").primaryKey(),
+  memberId: integer("member_id").references(() => members.id),
+  eventId: integer("event_id").references(() => events.id), 
+  requestType: text("request_type").notNull(), 
+  reason: text("reason").notNull(),
+  status: text("status").default("pending"), 
+  createdAt: timestamp("created_at").defaultNow(),
 });
