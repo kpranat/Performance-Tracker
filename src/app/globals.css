@@ -1,0 +1,25 @@
+/* @import "tailwindcss"; */
+@import "tailwindcss";
+
+body {
+  background:
+    radial-gradient(circle at top left, #f8f4ee 0%, transparent 40%),
+    radial-gradient(circle at bottom right, #f2efe9 0%, transparent 40%),
+    #faf8f5;
+
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: 1px;
+}
+
+.card-luxury {
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
