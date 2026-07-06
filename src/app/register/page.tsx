@@ -15,9 +15,12 @@ import {
 } from "lucide-react";
 
 export default function RegisterPage() {
+
   const [form, setForm] = useState({
     name: "",
     email: "",
+    password: "",
+    confirmPassword: "",
     role: "",
     joinDate: "",
     domain: "",
@@ -93,6 +96,29 @@ export default function RegisterPage() {
                   />
                 </div>
               </div>
+
+              <div>
+  <Label>Password</Label>
+  <Input
+    id="password"
+    type="password"
+    className="h-12 rounded-xl mt-2"
+    placeholder="Create a password"
+    onChange={handleChange}
+  />
+</div>
+
+<div>
+  <Label>Confirm Password</Label>
+  <Input
+    id="confirmPassword"
+    type="password"
+    className="h-12 rounded-xl mt-2"
+    placeholder="Confirm password"
+    onChange={handleChange}
+  />
+</div>
+
 
               <div>
                 <Label>Role</Label>
