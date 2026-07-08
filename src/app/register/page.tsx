@@ -13,18 +13,22 @@ import {
   Building2,
   UserPlus,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth/client";
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-   confirmPassword: "",
-    role: "",
-    joinDate: "",
-    domain: "",
-    department: "",
-  });
+const router = useRouter();
+
+const [form, setForm] = useState({
+  name: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+  role: "",
+  joinDate: "",
+  domain: "",
+  department: "",
+});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({
@@ -33,6 +37,28 @@ export default function RegisterPage() {
     });
   };
 
+   const handleRegister = async () => {
+  if (form.password !== form.confirmPassword) {
+    alert("Passwords do not match");
+    return;
+  }
+
+  console.log("Calling signup...");
+
+  try {
+    const result = await authClient.signUp.email({
+      email: form.email,
+      password: form.password,
+      name: form.name,
+    });
+
+    console.log(result);
+
+    router.push("/dashboard");
+  } catch (err) {
+    console.error(err);
+  }
+};
   return (
     <div className="min-h-screen flex">
       {/* Left Side */}
@@ -96,13 +122,13 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <div>
+<div>
   <Label>Create Password</Label>
   <Input
     id="password"
     type="password"
     className="h-12 rounded-xl mt-2"
-    placeholder="Create a password"
+    placeholder="Create Password"
     onChange={handleChange}
   />
 </div>
@@ -113,7 +139,7 @@ export default function RegisterPage() {
     id="confirmPassword"
     type="password"
     className="h-12 rounded-xl mt-2"
-    placeholder="Confirm your password"
+    placeholder="Confirm Password"
     onChange={handleChange}
   />
 </div>
@@ -170,9 +196,13 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <Button className="w-full h-12 rounded-xl bg-black hover:bg-gray-800 text-white flex items-center justify-center gap-2 mt-8">
-              Create Account
-            </Button>
+<Button
+  type="button"
+  onClick={handleRegister}
+  className="w-full h-12 rounded-xl bg-black hover:bg-gray-800 text-white flex items-center justify-center gap-2 mt-8"
+>
+  Create Account
+</Button>
 
             <CardFooter className="flex justify-center pt-6 px-0">
               <p className="text-sm text-gray-500">
