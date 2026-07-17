@@ -29,7 +29,7 @@ export default function EventsPage() {
 
   // Backend Integration Later
 
-  const role = "member";
+  const role: string = "member";
   // member
   // associate_lead
   // lead

@@ -2,20 +2,51 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Card, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, LogIn } from "lucide-react";
+import { authClient } from "@/lib/auth/client";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
 
-    // TODO: Connect login API
+    if (!email || !password) {
+      setErrorMessage("Please enter your email and password.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const result = await authClient.signIn.email({
+        email,
+        password,
+      });
+
+      if (result.error) {
+        setErrorMessage(result.error.message || "Unable to sign in.");
+        setLoading(false);
+        return;
+      }
+
+      router.push("/dashboard");
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("Sign in failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -87,11 +118,18 @@ export default function LoginPage() {
                   </div>
                 </div>
 
+                {errorMessage ? (
+                  <div className="rounded-xl bg-red-100 px-4 py-3 text-sm text-red-800">
+                    {errorMessage}
+                  </div>
+                ) : null}
+
                 <Button
                   type="submit"
                   className="w-full h-12 rounded-xl bg-black hover:bg-gray-800 text-white flex items-center justify-center gap-2"
+                  disabled={loading}
                 >
-                  Sign In
+                  {loading ? "Signing in..." : "Sign In"}
                 </Button>
               </div>
             </form>

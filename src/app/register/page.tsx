@@ -17,18 +17,20 @@ import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
 
 export default function RegisterPage() {
-const router = useRouter();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-const [form, setForm] = useState({
-  name: "",
-  email: "",
-  password: "",
-  confirmPassword: "",
-  role: "",
-  joinDate: "",
-  domain: "",
-  department: "",
-});
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "",
+    joinDate: "",
+    domain: "",
+    department: "",
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({
@@ -37,28 +39,85 @@ const [form, setForm] = useState({
     });
   };
 
-   const handleRegister = async () => {
-  if (form.password !== form.confirmPassword) {
-    alert("Passwords do not match");
-    return;
-  }
+  const handleRegister = async (event?: React.FormEvent) => {
+    event?.preventDefault();
+    setErrorMessage(null);
 
-  console.log("Calling signup...");
+    if (form.password !== form.confirmPassword) {
+      setErrorMessage("Passwords do not match.");
+      return;
+    }
 
-  try {
-    const result = await authClient.signUp.email({
-      email: form.email,
-      password: form.password,
-      name: form.name,
-    });
+    if (
+      !form.name ||
+      !form.email ||
+      !form.password ||
+      !form.confirmPassword ||
+      !form.role ||
+      !form.joinDate ||
+      !form.domain ||
+      !form.department
+    ) {
+      setErrorMessage("Please fill in every field before creating your account.");
+      return;
+    }
 
-    console.log(result);
+    setLoading(true);
 
-    router.push("/dashboard");
-  } catch (err) {
-    console.error(err);
-  }
-};
+    try {
+      const backendResponse = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          role: form.role,
+          joinDate: form.joinDate,
+          domain: form.domain,
+          department: form.department,
+        }),
+      });
+
+      const backendData = await backendResponse.json();
+
+      if (!backendResponse.ok) {
+        setErrorMessage(backendData.error || "Unable to save profile data.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        await authClient.signUp.email({
+          email: form.email,
+          password: form.password,
+          name: form.name,
+        });
+      } catch (authError) {
+        console.warn("Auth signup did not complete, but profile creation succeeded.", authError);
+      }
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          "tracker:user",
+          JSON.stringify({
+            name: form.name,
+            email: form.email,
+            role: form.role,
+          })
+        );
+        window.localStorage.setItem("tracker:authenticated", "true");
+      }
+
+      router.replace("/dashboard");
+    } catch (err) {
+      console.error(err);
+      setErrorMessage("Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen flex">
       {/* Left Side */}
@@ -94,115 +153,138 @@ const [form, setForm] = useState({
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <Label>Full Name</Label>
-                <div className="relative mt-2">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <form onSubmit={(event) => void handleRegister(event)} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <Label>Full Name</Label>
+                  <div className="relative mt-2">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="name"
+                      value={form.name}
+                      required
+                      className="pl-10 h-12 rounded-xl"
+                      placeholder="Enter name"
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Email</Label>
+                  <div className="relative mt-2">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="email"
+                      type="text"
+                      value={form.email}
+                      required
+                      autoComplete="email"
+                      className="pl-10 h-12 rounded-xl"
+                      placeholder="Enter email"
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Create Password</Label>
                   <Input
-                    id="name"
-                    className="pl-10 h-12 rounded-xl"
-                    placeholder="Enter name"
+                    id="password"
+                    type="password"
+                    value={form.password}
+                    required
+                    className="h-12 rounded-xl mt-2"
+                    placeholder="Create Password"
                     onChange={handleChange}
                   />
                 </div>
-              </div>
 
-              <div>
-                <Label>Email</Label>
-                <div className="relative mt-2">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <div>
+                  <Label>Confirm Password</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    className="pl-10 h-12 rounded-xl"
-                    placeholder="Enter email"
+                    id="confirmPassword"
+                    type="password"
+                    value={form.confirmPassword}
+                    required
+                    className="h-12 rounded-xl mt-2"
+                    placeholder="Confirm Password"
                     onChange={handleChange}
                   />
                 </div>
-              </div>
 
-<div>
-  <Label>Create Password</Label>
-  <Input
-    id="password"
-    type="password"
-    className="h-12 rounded-xl mt-2"
-    placeholder="Create Password"
-    onChange={handleChange}
-  />
-</div>
-
-<div>
-  <Label>Confirm Password</Label>
-  <Input
-    id="confirmPassword"
-    type="password"
-    className="h-12 rounded-xl mt-2"
-    placeholder="Confirm Password"
-    onChange={handleChange}
-  />
-</div>
-
-
-
-              <div>
-                <Label>Role</Label>
-                <Input
-                  id="role"
-                  className="h-12 rounded-xl mt-2"
-                  placeholder="Member/Lead"
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div>
-                <Label>Join Date</Label>
-                <div className="relative mt-2">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <div>
+                  <Label>Role</Label>
                   <Input
-                    id="joinDate"
-                    type="date"
-                    className="pl-10 h-12 rounded-xl"
+                    id="role"
+                    value={form.role}
+                    required
+                    className="h-12 rounded-xl mt-2"
+                    placeholder="Member/Lead"
                     onChange={handleChange}
                   />
                 </div>
-              </div>
 
-              <div>
-                <Label>Domain</Label>
-                <div className="relative mt-2">
-                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="domain"
-                    className="pl-10 h-12 rounded-xl"
-                    placeholder="Operations / Tech"
-                    onChange={handleChange}
-                  />
+                <div>
+                  <Label>Join Date</Label>
+                  <div className="relative mt-2">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="joinDate"
+                      type="date"
+                      value={form.joinDate}
+                      required
+                      className="pl-10 h-12 rounded-xl"
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Domain</Label>
+                  <div className="relative mt-2">
+                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="domain"
+                      value={form.domain}
+                      required
+                      className="pl-10 h-12 rounded-xl"
+                      placeholder="Operations / Tech"
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Department</Label>
+                  <div className="relative mt-2">
+                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="department"
+                      value={form.department}
+                      required
+                      className="pl-10 h-12 rounded-xl"
+                      placeholder="CTech/NWC/CINTEL"
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <Label>Department</Label>
-                <div className="relative mt-2">
-                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="department"
-                    className="pl-10 h-12 rounded-xl"
-                    placeholder="CTech/NWC/CINTEL"
-                    onChange={handleChange}
-                  />
-                </div>
+            {errorMessage ? (
+              <div className="mt-4 rounded-xl bg-red-100 px-4 py-3 text-sm text-red-800">
+                {errorMessage}
               </div>
-            </div>
+            ) : null}
 
-<Button
-  type="button"
-  onClick={handleRegister}
-  className="w-full h-12 rounded-xl bg-black hover:bg-gray-800 text-white flex items-center justify-center gap-2 mt-8"
->
-  Create Account
-</Button>
+              <Button
+                type="submit"
+                className="w-full h-12 rounded-xl bg-black text-white mt-8"
+                disabled={loading}
+              >
+                {loading ? "Creating account..." : "Create Account"}
+              </Button>
+            </form>
 
             <CardFooter className="flex justify-center pt-6 px-0">
               <p className="text-sm text-gray-500">

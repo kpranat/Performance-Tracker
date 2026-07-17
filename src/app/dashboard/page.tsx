@@ -21,7 +21,7 @@ export default function DashboardPage() {
     Backend integration later
   */
 
-  const role = "member";
+  const role: string = "member";
   // member
   // associate_lead
   // lead
