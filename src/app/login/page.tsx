@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -44,7 +44,6 @@ export default function LoginPage() {
     } catch (error) {
       console.error(error);
       setErrorMessage("Sign in failed. Please try again.");
-    } finally {
       setLoading(false);
     }
   };
@@ -53,17 +52,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex">
       {/* Left Side */}
       <div className="hidden lg:flex w-1/2 bg-[#1f1f1f] text-white flex-col justify-center px-20">
-        <h1 className="text-7xl font-light tracking-wider">
-          PERFORMANCE
-        </h1>
-
-        <h1 className="text-7xl font-light tracking-wider mb-6">
-          TRACKER
-        </h1>
-
-        <p className="text-lg text-gray-300">
-          Track • Contribute • Grow
-        </p>
+        <h1 className="text-7xl font-light tracking-wider">PERFORMANCE</h1>
+        <h1 className="text-7xl font-light tracking-wider mb-6">TRACKER</h1>
+        <p className="text-lg text-gray-300">Track • Contribute • Grow</p>
       </div>
 
       {/* Right Side */}
@@ -74,24 +65,18 @@ export default function LoginPage() {
               <div className="mx-auto h-14 w-14 rounded-full bg-black flex items-center justify-center mb-4">
                 <LogIn className="h-6 w-6 text-white" />
               </div>
-
               <h2 className="text-3xl font-semibold text-gray-900">
                 Welcome Back
               </h2>
-
-              <p className="text-gray-500 mt-2">
-                Sign in to continue
-              </p>
+              <p className="text-gray-500 mt-2">Sign in to continue</p>
             </div>
 
             <form onSubmit={handleLogin}>
               <div className="space-y-5">
                 <div>
                   <Label>Email</Label>
-
                   <div className="relative mt-2">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-
                     <Input
                       type="email"
                       placeholder="Enter your email"
@@ -104,10 +89,8 @@ export default function LoginPage() {
 
                 <div>
                   <Label>Password</Label>
-
                   <div className="relative mt-2">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-
                     <Input
                       type="password"
                       placeholder="Enter your password"
@@ -118,11 +101,11 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {errorMessage ? (
+                {errorMessage && (
                   <div className="rounded-xl bg-red-100 px-4 py-3 text-sm text-red-800">
                     {errorMessage}
                   </div>
-                ) : null}
+                )}
 
                 <Button
                   type="submit"
