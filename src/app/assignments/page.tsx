@@ -21,7 +21,11 @@ export default function AssignmentsPage() {
 
   // Backend integration later
 
-  const assignments = [
+  const assignments: Array<{
+    eventName: string;
+    status: string;
+    pointsAwarded: number;
+  }> = [
     // {
     //   eventName:"",
     //   status:"",
